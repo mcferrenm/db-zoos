@@ -94,6 +94,89 @@ server.put("/api/zoos/:id", async (req, res) => {
   }
 });
 
+// Bears End Points
+
+server.get("/api/bears", async (req, res) => {
+  try {
+    const bears = await db("bears");
+    res.status(200).json(bears);
+  } catch (error) {
+    res.status(500).json({ error: "Error while getting bears" });
+  }
+});
+
+server.get("/api/bears/:id", async (req, res) => {
+  try {
+    const bear = await db("bears")
+      .where({ id: req.params.id })
+      .first();
+    if (bear) {
+      res.status(200).json(bear);
+    } else {
+      res.status(404).json({ error: "Bear not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error while getting bear" });
+  }
+});
+
+server.post("/api/bears", async (req, res) => {
+  try {
+    if (!req.body.name) {
+      res.status(400).json({ error: "Please provide a name for new bear." });
+    } else {
+      const [id] = await db("bears").insert(req.body);
+      if (id) {
+        const bear = await db("bears")
+          .where({ id: id })
+          .first();
+        res.status(200).json(bear);
+      } else {
+        res.status(500).json({ error: "Error while inserting bear" });
+      }
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error while inserting bear" });
+  }
+});
+
+server.delete("/api/bears/:id", async (req, res) => {
+  try {
+    const count = await db("bears")
+      .where({ id: req.params.id })
+      .del();
+    if (count > 0) {
+      res.status(204).end();
+    } else {
+      res.status(404).json({ error: "Bear not found" });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error while deleting bear" });
+  }
+});
+
+server.put("/api/bears/:id", async (req, res) => {
+  try {
+    if (!req.body.name) {
+      res.status(400).json({ error: "Please provide a name for new bear." });
+    } else {
+      const count = await db("bears")
+        .where({ id: req.params.id })
+        .update(req.body);
+      if (count > 0) {
+        const bear = await db("bears")
+          .where({ id: req.params.id })
+          .first();
+        res.status(200).json(bear);
+      } else {
+        res.status(404).json({ error: "Bear not found" });
+      }
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error while deleting bear" });
+  }
+});
+
 const port = 3300;
 server.listen(port, function() {
   console.log(`\n=== Web API Listening on http://localhost:${port} ===\n`);
